@@ -17,8 +17,6 @@ public class GameUI
 
     Stack<UIPane> _viewStack = new Stack<UIPane>();
     UIPane _currentPane = null;
-    Player _player;
-    InputObserver _inputObj = new InputObserver();
 
     List<UIPane> _uiList = new List<UIPane>();
 
@@ -28,47 +26,28 @@ public class GameUI
     public void Setup()
     {
         CanvasRoot = GameObject.Find("/UI")?.GetComponent<Canvas>();
-        _player = GameManager.GetTarget(0).GetComponent<Player>();
         _uiList = CanvasRoot.GetComponentsInChildren<UIPane>().ToList();
-        _inputObj.AddObserver(_player);
     }
 
-    public void Update()
+    public void UpdateUI()
     {
-        _inputObj.NotifyObserver(InputObserver.CreateInput("Move"));
-        if (Input.GetKeyDown(KeyCode.Z))
-        {
-            _inputObj.NotifyObserver(InputObserver.CreateInput("Attack"));
-        }
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            _inputObj.NotifyObserver(InputObserver.CreateInput("UI"));
-        }
-
         if(_nextUI)
         {
-            _inputObj.DeleteObserver(_player);
             if (_currentPane != null)
             {
-                _inputObj.DeleteObserver(_currentPane);
                 _viewStack.Push(_currentPane);
             }
             _currentPane = _nextUI;
-            _inputObj.AddObserver(_currentPane);
+            InputrManager.Instance.Register(_currentPane);
         }
 
         if(_backUI && _backUI == _currentPane)
         {
-            _inputObj.DeleteObserver(_currentPane);
+            InputrManager.Instance.Delete(_currentPane);
             _currentPane = null;
             if (_viewStack.Count > 0)
             {
                 _currentPane = _viewStack.Pop();
-                _inputObj.AddObserver(_currentPane);
-            }
-            else
-            {
-                _inputObj.AddObserver(_player);
             }
         }
         _nextUI = null;
